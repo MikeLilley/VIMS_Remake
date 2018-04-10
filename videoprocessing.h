@@ -21,29 +21,153 @@ class VideoProcessing : public QObject  //Class to filter and produce video.
     public:
         explicit VideoProcessing(QObject *parent = nullptr);
 
-        /* Profile Modifiers */
-        void addProfile()
+        /* Profile Mutators and Accessors */
+
+        //Function to check if a profile exists based on its index within the profileList vector.
+        bool profileExists(unsigned short &profileIndex)
         {
-            Profile tempProfile;
-            //Signal Code from UI to assign instance data to profile.
-            //After "Add" has been hit:
-            profileList.push_back(tempProfile);
+            if (profileIndex < profileList.size())
+                return true;
+
+            else return false;
         }
 
-        void removeProfile()
+        //Subroutine to add a profile to the profileList vector.
+        void addProfile(Profile &tempProfile) { profileList.push_back(tempProfile); }
+
+        //Function to remove a profile contained within the profileList vector.
+        int removeProfile(unsigned short &profileIndex)
         {
-            short indexToRemove;
             //List profiles contained in profileList in combo box, select which one to remove.
             //After "Remove" has been hit:
-            profileList.erase(myVector.begin + indexToRemove);
+            if (profileExists(profileIndex))
+            {
+                profileList.erase(profileList.begin() + profileIndex);
+                return 0;
+            }
+
+            else return -1;
         }
 
-        void AddNewCamera()
+        //Function to set the name of a profile contained within the profileList vector.
+        int setProfileName(unsigned short &profileIndex, std::string &newProfileName)
         {
+            if (profileExists(profileIndex))
+            {
+                profileList.at(profileIndex).name = newProfileName;
+                return 0;
+            }
 
+            else return -1;
         }
 
-        ~VideoProcessing();
+        /* Camera Mutators and Accessors */
+
+        //Adds a new camera to the profileList vector.
+        int addNewCamera(unsigned short &profileIndex, Camera &newCamera)
+        {
+            //After "Add" has been hit:
+            if (profileExists(profileIndex))
+            {
+                profileList.at(profileIndex).cameraList.push_back(newCamera);
+                return 0;
+            }
+
+            else return -1;
+        }
+
+        //Removes a camera from the profileList vector;
+        int removeCamera(unsigned short &profileIndex, unsigned short &cameraID)
+        {
+            //List cameras contained in cameraList of inputProfile in combo box, select which one to remove.
+            //After "Remove" has been hit:
+            if (profileExists(profileIndex))
+            {
+                profileList.at(profileIndex).cameraList.erase(profileList.at(profileIndex).cameraList.begin() + cameraID);
+                return 0;
+            }
+
+            else return -1;
+        }
+
+        //Function to set a camera's name within the cameraList vector contained in a profile.
+        int setCameraName(unsigned short &profileIndex, unsigned short &cameraID, std::string &newCameraName)
+        {
+            //List cameras contained in cameraList of inputProfile in combo box, select which one to remove.
+            //After "Remove" has been hit:
+            if (profileExists(profileIndex))
+            {
+                profileList.at(profileIndex).cameraList.at(cameraID).cameraName = newCameraName;
+                return 0;
+            }
+
+            return -1;
+        }
+
+        //Function to return a camera's name within the cameraList vector contained in a profile.
+        std::string getCameraName(unsigned short &profileIndex, unsigned short &cameraID)
+        {
+            if (profileExists(profileIndex))
+                return profileList.at(profileIndex).cameraList.at(cameraID).cameraName;
+
+            else return "-1";
+        }
+
+        //Function to set a camera's type of connection within the cameraList vector contained in a profile.
+        int setCameraConnection(unsigned short &profileIndex, unsigned short &cameraID, std::string &newCameraType)
+        {
+            if (profileExists(profileIndex))
+            {
+                if (newCameraType == "Static")
+                {
+                    profileList.at(profileIndex).cameraList.at(cameraID).connection = Static;
+                    return 0;
+                }
+
+                else if (newCameraType == "USB")
+                {
+                    profileList.at(profileIndex).cameraList.at(cameraID).connection = USB;
+                    return 0;
+                }
+
+                else if (newCameraType == "Ethernet")
+                {
+                    profileList.at(profileIndex).cameraList.at(cameraID).connection = Ethernet;
+                    return 0;
+                }
+
+
+                else if (newCameraType == "WiFi")
+                {
+                    profileList.at(profileIndex).cameraList.at(cameraID).connection = WiFi;
+                    return 0;
+                }
+
+                else if (newCameraType == "Serial")
+                {
+                    profileList.at(profileIndex).cameraList.at(cameraID).connection = Serial;
+                    return 0;
+                }
+
+                else return -1;
+            }
+
+            else return -1;
+        }
+
+        //Function to set a camera's port within the cameraList vector contained in a profile.
+        int setCameraPort(unsigned short &profileIndex, unsigned short &newCameraPort, unsigned short &cameraID)
+        {
+            if (profileExists(profileIndex))
+            {
+                profileList.at(profileIndex).cameraList.at(cameraID).cameraPort = newCameraPort;
+                return 0;
+            }
+
+            else return -1;
+        }
+
+        //~VideoProcessing();   TODO: Create Destrutor
 
     signals:
 
