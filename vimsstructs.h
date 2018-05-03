@@ -25,6 +25,7 @@ struct Camera
     unsigned short cameraPort;  //Variable to store port ID if connection type is Wireless.
     unsigned short cameraID;    //Variable to store the ID of a camera.
     CartesianCoordinates defaultResolution;   //CartesianCoordinates variable to store resolution of video stream.
+	unsigned short cameraFPS;	//Variable to store the default FPS of a camera stream.
 };
 
 //Defines a generic structure to be used for coloring certain elements of the overlay.
