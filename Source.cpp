@@ -1,5 +1,5 @@
-#include <opencv2\core.hpp>
-#include "videoprocessing.h"
+#include <opencv2/core.hpp>
+#include "video_processing.hpp"
 
 int main()
 {
@@ -8,6 +8,5 @@ int main()
 	videoInstance.fileExistsInDirectory("testFile.txt");
 	//videoInstance.readVideoStream();
 	
-
 	return 0;
 }

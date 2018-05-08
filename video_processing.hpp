@@ -4,16 +4,21 @@
 #include <vector>
 #include <fstream>
 #include <thread>
+#include <algorithm>
+#include <string>
 
-#include "vimsstructs.h"
+#include "open_vis_structs.hpp"
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/range/algorithm/remove_if.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/videoio.hpp"
 #include "opencv2/imgcodecs.hpp"
 
-#define PROFILEDATALINECOUNT 5
+#define PROFILEDATALINECOUNT 3
+#define UIDATACOUNT 6
+#define CAMERADATACOUNT 6
 
 class VideoProcessing  //Class to filter and produce video.
 {
@@ -307,25 +312,138 @@ class VideoProcessing  //Class to filter and produce video.
         //Default Constructor
         VideoProcessing()
         {
+			/* Check if profile data files exists. If so, verify it is valid and load it.
+			 * If not, create and populate one with a default value, then load it.
+			 */
 			if (fileExistsInDirectory("OpenVISData.txt"))
 			{
 				std::ifstream dataFile("OpenVISData.txt");
 				std::string dataFileLineTemp;
+				Profile tempProfile;	//Temporary Profile, to be copied into profile vector.
+
 				//TODO: Verify Data, then parse it.
 				dataFile.seekg(dataFile.beg);
-				while (!dataFile.eof())
+				do 
 				{
-					for (int i = 0; i < PROFILEDATALINECOUNT; i++)
+					std::getline(dataFile, tempProfile.name);	//Read in name of profile.
+					
+					std::getline(dataFile, dataFileLineTemp);	//Read UI data into a temporary string to be parsed.
+					for (int i = 0; i < UIDATACOUNT; i++)	//Parse UI Data
 					{
-						Profile tempProfile;
-						std::getline(dataFile, dataFileLineTemp);	//Skip first line.
-						std::getline(dataFile, dataFileLineTemp);	//Read in second line.
-						
+						//A switch statement is used to correctly assign the substring being read to the corresponding data.
+						switch (i)
+						{
+							case 0:
+							{
+								if (dataFileLineTemp.substr(i, 1) == "f") 
+									tempProfile.defaultUiSettings.displayHUD = false;
+
+								else
+									tempProfile.defaultUiSettings.displayHUD = true;
+
+								break;
+							}
+
+							case 1:
+							{
+								if (dataFileLineTemp.substr(i, 1) == "f")
+									tempProfile.defaultUiSettings.trackingMode = false;
+
+								else
+									tempProfile.defaultUiSettings.trackingMode = true;
+
+								break;
+							}
+
+							case 2:
+							{
+								if (dataFileLineTemp.substr(i, 1) == "f")
+									tempProfile.defaultUiSettings.displayFpsCounter = false;
+
+								else
+									tempProfile.defaultUiSettings.displayFpsCounter = true;
+
+								break;
+							}
+
+							case 3:
+							{
+								if (dataFileLineTemp.substr(i, 1) == "f")
+									tempProfile.defaultUiSettings.displayTimeAndDate = false;
+
+								else
+									tempProfile.defaultUiSettings.displayTimeAndDate = true;
+
+								break;
+							}
+
+							case 4:
+							{
+								if (dataFileLineTemp.substr(i, 1) == "f")
+									tempProfile.defaultUiSettings.displayVideoResolution = false;
+
+								else
+									tempProfile.defaultUiSettings.displayVideoResolution = true;
+
+								break;
+							}
+
+							case 5:
+							{
+								//Create temporary variables to hold RGB values.
+								std::string rgbDataString = dataFileLineTemp.substr(i, dataFileLineTemp.length() - 5);
+								//Index variables used to differentate between R, G, and B values in rgbDataString.
+								unsigned short beginningIndex = 0;
+
+								for (int i = 0; i < 3; i++)
+								{
+									for (int endingIndex = beginningIndex; endingIndex < dataFileLineTemp.length(); endingIndex++)
+									{
+										if (dataFileLineTemp.substr(endingIndex, 1) == ",")
+										{
+											beginningIndex = endingIndex + 1;
+											std::string tempValueString = rgbDataString.substr(beginningIndex, endingIndex);
+
+											//Process string, delete any characters that are
+											tempValueString.erase(boost::remove_if(tempValueString, ::isdigit), tempValueString.end());
+											uint8_t tempValue = std::stoi(tempValueString);
+
+											switch (i)
+											{
+												case 0:
+												{
+													tempProfile.defaultUiSettings.defaultColorScheme.redValue = tempValue;
+													break;
+												}
+
+												case 1:
+												{
+													tempProfile.defaultUiSettings.defaultColorScheme.greenValue = tempValue;
+													break;
+												}
+
+												case 2:
+												{
+													tempProfile.defaultUiSettings.defaultColorScheme.blueValue = tempValue;
+													break;
+												}
+											}
+										}
+									}
+								}
+
+								break;
+							}
+						}
+					}
+
+					//Statements to read in camera data.
+					while (dataFileLineTemp != "")
+					{
 
 					}
-				}
-
-				
+					
+				} while (!dataFile.eof());
 			}
 			
 			else
